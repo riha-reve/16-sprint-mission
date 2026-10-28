@@ -1,81 +1,63 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+@Service
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
-
     private final MessageRepository messageRepository;
+    //
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
-    public BasicMessageService(MessageRepository messageRepository, ChannelRepository channelRepository, UserRepository userRepository) {
-        this.channelRepository = channelRepository;
-        this.messageRepository = messageRepository;
-        this.userRepository = userRepository;
-    }
 
     @Override
-    public Message create(UUID channelId, UUID senduser, String content) {
-        if(userRepository.findById(senduser) == null) {
-            throw new RuntimeException("존재하지 않는 사용자입니다: " + senduser);
+    public Message create(String content, UUID channelId, UUID authorId) {
+        if (!channelRepository.existsById(channelId)) {
+            throw new NoSuchElementException("Channel not found with id " + channelId);
         }
-        if(channelRepository.findById(channelId) == null) {
-            throw new RuntimeException("존재하지 않는 채널입니다: " + channelId);
+        if (!userRepository.existsById(authorId)) {
+            throw new NoSuchElementException("Author not found with id " + authorId);
         }
 
-        Message message = new Message(channelId, senduser, content);
+        Message message = new Message(content, channelId, authorId);
         return messageRepository.save(message);
     }
 
     @Override
-    public Message read(UUID id) {
-
-        return messageRepository.findById(id);
+    public Message find(UUID messageId) {
+        return messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
     }
 
     @Override
-    public List<Message> readAll() {
-
+    public List<Message> findAll() {
         return messageRepository.findAll();
     }
 
     @Override
-    public List<Message> findByContent(String keyword) {
-        return messageRepository.findByContent(keyword);
-    }
-
-    @Override
-    public Message update(UUID id, String content) {
-        Message message = messageRepository.findById(id);
-        if (message == null) {
-            throw new NoSuchElementException("사용하지 않는 메세지입니다: " + id);
-        }
-        message.update(content);
+    public Message update(UUID messageId, String newContent) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+        message.update(newContent);
         return messageRepository.save(message);
     }
 
     @Override
-    public Message toggleBookmark(UUID id) {
-        Message message = messageRepository.findById(id);
-        if(message == null) {
-            throw new NoSuchElementException("존재하지 않는 메세지입니다:" + id);
+    public void delete(UUID messageId) {
+        if (!messageRepository.existsById(messageId)) {
+            throw new NoSuchElementException("Message with id " + messageId + " not found");
         }
-        message.toggleBookmark();
-        return messageRepository.save(message);
+        messageRepository.deleteById(messageId);
     }
-
-
-    @Override
-    public void delete(UUID Id) {
-        messageRepository.deleteById(Id);
-    }
-
 }
