@@ -5,6 +5,8 @@ import lombok.Getter;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 public class Message implements Serializable {
@@ -15,9 +17,11 @@ public class Message implements Serializable {
     private Instant updatedAt;
     //
     private String content;
-    //
+
     private UUID channelId;
     private UUID authorId;
+
+    private List<UUID> attachmentIds = new ArrayList<>();
 
     public Message(String content, UUID channelId, UUID authorId) {
         this.id = UUID.randomUUID();
