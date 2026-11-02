@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import com.sprint.mission.discodeit.dto.MessageCreateRequest;
 
 @SpringBootApplication
 public class DiscodeitApplication {
@@ -28,8 +29,8 @@ public class DiscodeitApplication {
 	}
 
 	static void messageCreateTest(MessageService messageService, ChannelResponseDto channel, UserResponseDto author) {
-		Message message = messageService.create("안녕하세요.", channel.getId(), author.getId());
-		System.out.println("메시지 생성: " + message.getId());
+		Message message = messageService.create(
+				new MessageCreateRequest("안녕하세요.", channel.getId(), author.getId(), null));
 	}
 
 	public static void main(String[] args) {

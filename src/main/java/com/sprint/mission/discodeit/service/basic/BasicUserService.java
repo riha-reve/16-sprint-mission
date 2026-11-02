@@ -3,14 +3,15 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.UserResponseDto;
+import com.sprint.mission.discodeit.dto.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.dto.UserUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
+    private final UserMapper userMapper;
 
     @Override
     public UserResponseDto create(UserCreateRequest request) {
@@ -63,40 +65,21 @@ public class BasicUserService implements UserService {
         UserStatus status = new UserStatus(savedUser.getId(), Instant.now());
         userStatusRepository.save(status);
 
-        return new UserResponseDto(
-                savedUser.getId(),
-                savedUser.getUsername(),
-                savedUser.getEmail(),
-                savedUser.getProfileId(),
-                status.isOnline()
-        );
+        return userMapper.toDto(savedUser);
     }
 
     @Override
     public UserResponseDto find(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-        return toDto(user);
+        return userMapper.toDto(user);
     }
 
     @Override
     public List<UserResponseDto> findAll() {
         return userRepository.findAll().stream()
-                .map(this::toDto)
+                .map(userMapper::toDto)
                 .toList();
-    }
-
-    private UserResponseDto toDto(User user) {
-        boolean online = userStatusRepository.findByUserId(user.getId())
-                .map(UserStatus::isOnline)
-                .orElse(false);
-        return new UserResponseDto(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getProfileId(),
-                online
-        );
     }
 
     @Override
@@ -126,7 +109,7 @@ public class BasicUserService implements UserService {
 
         user.update(request.getNewUsername(), request.getNewEmail(), request.getNewPassword(), newProfileId);
         User savedUser = userRepository.save(user);
-        return toDto(savedUser);
+        return userMapper.toDto(savedUser);
     }
 
     @Override
@@ -134,7 +117,7 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
-
+        // 관련된 도메인도 같이 삭제
         if (user.getProfileId() != null) {
             binaryContentRepository.deleteById(user.getProfileId());
         }
