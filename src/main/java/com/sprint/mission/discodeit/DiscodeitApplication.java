@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.dto.ChannelResponseDto;
+import com.sprint.mission.discodeit.dto.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.UserResponseDto;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -21,12 +21,13 @@ public class DiscodeitApplication {
 		return user;
 	}
 
-	static Channel setupChannel(ChannelService channelService) {
-		Channel channel = channelService.create(ChannelType.PUBLIC, "공지", "공지 채널입니다.");
+	static ChannelResponseDto setupChannel(ChannelService channelService) {
+		ChannelResponseDto channel = channelService.createPublic(
+				new PublicChannelCreateRequest("공지", "공지 채널입니다."));
 		return channel;
 	}
 
-	static void messageCreateTest(MessageService messageService, Channel channel, UserResponseDto author) {
+	static void messageCreateTest(MessageService messageService, ChannelResponseDto channel, UserResponseDto author) {
 		Message message = messageService.create("안녕하세요.", channel.getId(), author.getId());
 		System.out.println("메시지 생성: " + message.getId());
 	}
@@ -39,7 +40,7 @@ public class DiscodeitApplication {
 		MessageService messageService = context.getBean(MessageService.class);
 
 		UserResponseDto user = setupUser(userService);
-		Channel channel = setupChannel(channelService);
+		ChannelResponseDto channel = setupChannel(channelService);
 		messageCreateTest(messageService, channel, user);
 	}
 }
