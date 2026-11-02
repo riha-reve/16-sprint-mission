@@ -28,23 +28,23 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public Message create(MessageCreateRequest request) {
-        if (!channelRepository.existsById(request.getChannelId())) {
-            throw new NoSuchElementException("Channel not found with id " + request.getChannelId());
+        if (!channelRepository.existsById(request.channelId())) {
+            throw new NoSuchElementException("Channel not found with id " + request.channelId());
         }
-        if (!userRepository.existsById(request.getAuthorId())) {
-            throw new NoSuchElementException("Author not found with id " + request.getAuthorId());
+        if (!userRepository.existsById(request.authorId())) {
+            throw new NoSuchElementException("Author not found with id " + request.authorId());
         }
 
         // 첨부파일을 BinaryContent로 저장하고 id를 모은다
         List<UUID> attachmentIds = new ArrayList<>();
-        if (request.getAttachments() != null) {
-            for (BinaryContentCreateRequest attachment : request.getAttachments()) {
-                byte[] bytes = attachment.getBytes();
+        if (request.attachments() != null) {
+            for (BinaryContentCreateRequest attachment : request.attachments()) {
+                byte[] bytes = attachment.bytes();
 
                 BinaryContent binaryContent = new BinaryContent(
-                        attachment.getFileName(),
+                        attachment.fileName(),
                         (long) bytes.length,
-                        attachment.getContentType(),
+                        attachment.contentType(),
                         bytes
                 );
                 attachmentIds.add(binaryContentRepository.save(binaryContent).getId());
@@ -52,9 +52,9 @@ public class BasicMessageService implements MessageService {
         }
 
         Message message = new Message(
-                request.getContent(),
-                request.getChannelId(),
-                request.getAuthorId(),
+                request.content(),
+                request.channelId(),
+                request.authorId(),
                 attachmentIds
         );
         return messageRepository.save(message);
@@ -75,7 +75,7 @@ public class BasicMessageService implements MessageService {
     public Message update(UUID messageId, MessageUpdateRequest request) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
-        message.update(request.getNewContent());
+        message.update(request.newContent());
         return messageRepository.save(message);
     }
 

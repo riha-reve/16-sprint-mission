@@ -31,23 +31,23 @@ public class BasicUserService implements UserService {
     @Override
     public UserResponseDto create(UserCreateRequest request) {
         // 파일 저장 전에 중복을 검사
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+        if (userRepository.findByUsername(request.username()).isPresent()) {
             throw new IllegalArgumentException("이미 사용 중인 사용자 이름입니다.");
         }
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(request.email()).isPresent()) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
 
         UUID profileId = null;
-        BinaryContentCreateRequest profile = request.getProfile();
+        BinaryContentCreateRequest profile = request.profile();
 
         if (profile != null) {
-            byte[] bytes = profile.getBytes();
+            byte[] bytes = profile.bytes();
 
             BinaryContent binaryContent = new BinaryContent(
-                    profile.getFileName(),
+                    profile.fileName(),
                     (long) bytes.length,
-                    profile.getContentType(),
+                    profile.contentType(),
                     bytes
             );
 
@@ -55,9 +55,9 @@ public class BasicUserService implements UserService {
         }
 
         User user = new User(
-                request.getUsername(),
-                request.getEmail(),
-                request.getPassword(),
+                request.username(),
+                request.email(),
+                request.password(),
                 profileId
         );
         User savedUser = userRepository.save(user);
@@ -88,15 +88,15 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
         UUID newProfileId = null;
-        BinaryContentCreateRequest newProfile = request.getNewProfile();
+        BinaryContentCreateRequest newProfile = request.newProfile();
 
         if (newProfile != null) {
-            byte[] bytes = newProfile.getBytes();
+            byte[] bytes = newProfile.bytes();
 
             BinaryContent binaryContent = new BinaryContent(
-                    newProfile.getFileName(),
+                    newProfile.fileName(),
                     (long) bytes.length,
-                    newProfile.getContentType(),
+                    newProfile.contentType(),
                     bytes
             );
             newProfileId = binaryContentRepository.save(binaryContent).getId();
@@ -107,7 +107,7 @@ public class BasicUserService implements UserService {
             }
         }
 
-        user.update(request.getNewUsername(), request.getNewEmail(), request.getNewPassword(), newProfileId);
+        user.update(request.newUsername(), request.newEmail(), request.newPassword(), newProfileId);
         User savedUser = userRepository.save(user);
         return userMapper.toDto(savedUser);
     }

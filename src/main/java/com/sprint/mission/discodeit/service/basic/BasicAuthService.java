@@ -17,13 +17,14 @@ public class BasicAuthService implements AuthService {
 
     @Override
     public UserResponseDto login(LoginRequest request) {
-        User user = userRepository.findByUsername(request.getUsername())
+        User user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다."));
 
-        if (!user.getPassword().equals(request.getPassword())) {
+        if (!user.getPassword().equals(request.password())) {
             throw new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
         return userMapper.toDto(user);
     }
+
 }

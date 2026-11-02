@@ -30,7 +30,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelResponseDto createPublic(PublicChannelCreateRequest request) {
-        Channel channel = new Channel(ChannelType.PUBLIC, request.getName(), request.getDescription());
+        Channel channel = new Channel(ChannelType.PUBLIC, request.name(), request.description());
         Channel savedChannel = channelRepository.save(channel);
         return toDto(savedChannel);
     }
@@ -42,7 +42,7 @@ public class BasicChannelService implements ChannelService {
         Channel savedChannel = channelRepository.save(channel);
 
         // 참여자마다 ReadStatus를 만든다
-        for (UUID userId : request.getParticipantIds()) {
+        for (UUID userId : request.participantIds()) {
             ReadStatus readStatus = new ReadStatus(userId, savedChannel.getId(), Instant.now());
             readStatusRepository.save(readStatus);
         }
@@ -79,7 +79,7 @@ public class BasicChannelService implements ChannelService {
             throw new IllegalArgumentException("PRIVATE 채널은 수정할 수 없습니다.");
         }
 
-        channel.update(request.getNewName(), request.getNewDescription());
+        channel.update(request.newName(), request.newDescription());
         Channel savedChannel = channelRepository.save(channel);
         return toDto(savedChannel);
     }
