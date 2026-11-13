@@ -1,42 +1,46 @@
 package com.sprint.mission.discodeit.entity;
+
+import lombok.Getter;
+
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
-public class Message extends BaseEntity {
+@Getter
+public class Message implements Serializable {
 
-    private final UUID channelId;
-    private final UUID senduser;
-    private String content;
-    private boolean bookmarked;
+  private static final long serialVersionUID = 1L;
 
+  private UUID id;
+  private Instant createdAt;
+  private Instant updatedAt;
+  //
+  private String content;
+  //
+  private UUID channelId;
+  private UUID authorId;
+  private List<UUID> attachmentIds;
 
-public Message(UUID channelId, UUID senduser, String content) {
-    super();
-    this.channelId = channelId;
-    this.senduser = senduser;
+  public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    //
     this.content = content;
-    this.bookmarked = false;
-}
+    this.channelId = channelId;
+    this.authorId = authorId;
+    this.attachmentIds = attachmentIds;
+  }
 
-public UUID getChannelId() {
-    return channelId;
-}
-public UUID getSenduser() {
-    return senduser;
-}
-public String getContent() {
-    return content;
-}
-
-public boolean isBookmarked() {
-    return bookmarked;
+  public void update(String newContent) {
+    boolean anyValueUpdated = false;
+    if (newContent != null && !newContent.equals(this.content)) {
+      this.content = newContent;
+      anyValueUpdated = true;
     }
 
-    public void update(String content) {
-        this.content = content;
-        updateTimestamp();
+    if (anyValueUpdated) {
+      this.updatedAt = Instant.now();
     }
-    public void toggleBookmark() {
-        this.bookmarked = !this.bookmarked;
-        updateTimestamp();
-        }
+  }
 }
